@@ -1,0 +1,7 @@
+docker run --name pageviewservice -p 8081:8081 \
+--link rabbitmq:rabbitmq \
+--link mysqldb:dockermysql \
+-e SPRING_DATASOURCE_URL=jdbc:mysql://mysqldb:13306/pageviewservice \
+-e SPRING_PRFILES_ACTIVE=mysql \
+-e SPRING_RABBIT_HOST=rabbitmq \
+-d springframeworkguru/pageviewservice
