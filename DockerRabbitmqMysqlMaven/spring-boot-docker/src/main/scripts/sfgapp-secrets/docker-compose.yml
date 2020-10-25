@@ -11,11 +11,11 @@ services:
     restart: always
     environment:
       SPRING_RABBITMQ_HOST: rabbitmq
-#    healthcheck:
-#      test: ['CMD', 'curl', '-f', 'http://localhost:8080/actuator/health']
-#      interval: 30s
-#      timeout: 10s
-#      retries: 3
+    #    healthcheck:
+    #      test: ['CMD', 'curl', '-f', 'http://localhost:8080/actuator/health']
+    #      interval: 30s
+    #      timeout: 10s
+    #      retries: 3
     networks:
       - rabbit_net
     deploy:
@@ -28,10 +28,13 @@ services:
     environment:
       MYSQL_DATABASE: pageviewservice
       MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+      MYSQL_ROOT_PASSWORD_FILE: '/run/secrets/mysql.txt'
     networks:
       - database_net
     deploy:
       replicas: 1
+    secrets:
+      - mysql.txt
 
   rabbitmq:
     image: rabbitmq:3-management
@@ -56,23 +59,31 @@ services:
       SPRING_DATASOURCE_URL: 'jdbc:mysql://mysqldb:3306/pageviewservice'
       SPRING_PROFILES_ACTIVE: 'mysql'
       SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_CONFIG_LOCATION: 'file:run/secrets/'
     depends_on:
       - rabbitmq
       - mysqldb
-#    healthcheck:
-#      test: ['CMD', 'curl', '-f', 'http://localhost:8080/actuator/health']
-#      interval: 30s
-#      timeout: 10s
-#      retries: 3
+    #    healthcheck:
+    #      test: ['CMD', 'curl', '-f', 'http://localhost:8080/actuator/health']
+    #      interval: 30s
+    #      timeout: 10s
+    #      retries: 3
     networks:
       - rabbit_net
       - database_net
     deploy:
       replicas: 3
+    secrets:
+      - application.properties
 networks:
   rabbit_net:
     driver: overlay
   database_net:
     driver: overlay
+secrets:
+  mysql.txt:
+    external: true
+  application.properties:
+    file: ./application.properties
 
 

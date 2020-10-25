@@ -30,3 +30,25 @@ Only run below one for both 5672 and admin for rabbitmq:
 docker run -d --name rabbitmq -p 5671:5671 -p 5672:5672 -p 4369:4369 -p 25672:25672 -p 15672:15672 rabbitmq:3-management
 
 mvn clean package verify docker:push
+
+Docker swarm:
+
+docker service create --name mysqldb -p 3306:3306 -e MYSQL_DATABASE=pageviewservice -e MYSQL_ALLOW_EMPTY_PASSWORD=yes --network guru-service-network mysql
+
+docker service create --name pageviewservice -p 8088:8088 -e SPRING_DATASOURCE_URL=jdbc:mysql://mysqldb:3306/pageviewservice -e SPRING_PROFILES_ACTIVE=mysql -e SPRING_RABBITMQ_HOST=rabbitmq --network guru-service-network davidwei01docker/pageviewservice
+
+docker service create --name rabbitmq -p 5671:5671 -p 5672:5672 -p 4369:4369 -p 25672:25672 -p 15672:15672 --network guru-service-network rabbitmq:3-management
+
+docker service create --name springbootwebapp -p 8080:8080 -e SPRING_RABBITMQ_HOST=rabbitmq --network guru-service-network davidwei01docker/springbootdocker
+
+Docker stack
+
+docker stack deploy -c docker-compose.yml guru_stack
+
+docker service rm $(docker service ls -q)
+
+create external secrets:
+echo "password" | docker secret create mysql.txt -
+
+
+
